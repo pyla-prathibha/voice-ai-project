@@ -37,11 +37,11 @@ def voice_interact(request):
     reply_text = generate_reply(transcript)
 
     # TTS - save audio file
-    out_dir = os.path.join(settings.MEDIA_ROOT, 'voice_outputs')
-    os.makedirs(out_dir, exist_ok=True)
+    out_dir = os.path.join(settings.MEDIA_ROOT, 'voice_outputs') # media/voice_outputs
+    os.makedirs(out_dir, exist_ok=True) # create the directory if it doesn't exist
     out_filename = f"response_{uuid.uuid4().hex}.mp3"
     out_path = os.path.join(out_dir, out_filename)
-    synthesize(reply_text, out_path)
+    synthesize(reply_text, out_path) # tts
 
     audio_url = request.build_absolute_uri(settings.MEDIA_URL + f"voice_outputs/{out_filename}")
 
