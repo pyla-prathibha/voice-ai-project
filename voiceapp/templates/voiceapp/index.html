@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Voice Interact</title>
+  </head>
+  <body>
+    <h2>Upload audio to /voice-interact/</h2>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="file" id="audioFile" name="audio" accept="audio/*" required />
+      <button type="submit">Send</button>
+    </form>
+
+    <pre id="result" style="white-space:pre-wrap;margin-top:1rem;"></pre>
+    <div id="player" style="margin-top:1rem;"></div>
+
+    <script>
+    // get CSRF token from cookie (standard Django approach)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // cookie string like "name=value"
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    const form = document.getElementById('uploadForm');
+    const result = document.getElementById('result');
+    const player = document.getElementById('player');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      result.textContent = 'Uploading...';
+      player.innerHTML = '';
+      const fileInput = document.getElementById('audioFile');
+      if (!fileInput.files.length) { result.textContent = 'Select a file'; return; }
+      const fd = new FormData();
+      fd.append('audio', fileInput.files[0]);
+
+      try {
+        const resp = await fetch('/voice-interact/', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrftoken },
+          body: fd
+        });
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error('Server returned ' + resp.status + ': ' + txt);
+        }
+        const j = await resp.json();
+        result.textContent = JSON.stringify(j, null, 2);
+        if (j.audio_url) {
+          const a = document.createElement('audio');
+          a.controls = true;
+          a.src = j.audio_url;
+          player.appendChild(a);
+        }
+      } catch (err) {
+        result.textContent = 'Error: ' + err;
+      }
+    });
+    </script>
+  </body>
+</html>
