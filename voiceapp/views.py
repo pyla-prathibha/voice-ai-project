@@ -12,14 +12,12 @@ from .services.llm import generate_reply
 from .services.tts import synthesize
 
 def index(request):
-    # renders template at voiceapp/templates/voiceapp/index.html
     return render(request, 'voiceapp/index.html')
 
 
 @csrf_exempt
 @require_POST
 def voice_interact(request):
-    # Accepts multipart POST with `audio` file.
     audio_file = request.FILES.get('audio')
     if not audio_file:
         return JsonResponse({'error': 'no audio file provided (field name: audio)'}, status=400)
@@ -32,13 +30,13 @@ def voice_interact(request):
     finally:
         tmp.close()
 
-    # STT -> transcript
-    transcript = transcribe(tmp.name)
+    # STT - text
+    transcript = transcribe(tmp.name) # path of the audio file stored in the temporary directory
 
-    # LLM -> reply
+    # LLM - reply
     reply_text = generate_reply(transcript)
 
-    # TTS -> save audio file
+    # TTS - save audio file
     out_dir = os.path.join(settings.MEDIA_ROOT, 'voice_outputs')
     os.makedirs(out_dir, exist_ok=True)
     out_filename = f"response_{uuid.uuid4().hex}.mp3"

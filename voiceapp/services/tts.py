@@ -1,8 +1,8 @@
 import os
 import requests
 
-ELEVEN_API_KEY = os.getenv('ELEVENLABS_API_KEY') or os.getenv('ELEVEN_API_KEY')
-VOICE_ID = os.getenv('ELEVEN_VOICE_ID', 'YOUR_DEFAULT_VOICE_ID')
+ELEVEN_API_KEY = os.getenv('ELEVENLABS_API_KEY')
+VOICE_ID = os.getenv('ELEVEN_VOICE_ID')
 
 def synthesize(text: str, out_path: str) -> str:
     """Call ElevenLabs Text-to-Speech and write MP3 to out_path.
